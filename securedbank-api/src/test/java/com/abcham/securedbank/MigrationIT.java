@@ -6,8 +6,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import javax.sql.DataSource;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MigrationIT {
