@@ -17,8 +17,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 public class ProjectSecurityConfig {
+
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) {
+
         http.authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
                 .requestMatchers("/notices", "/contact", "/error", "/register").permitAll());
@@ -29,6 +31,7 @@ public class ProjectSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
+
         UserDetails user = User.withUsername("user").password("{noop}EazyBytes@12345").authorities("read").build();
         UserDetails admin = User.withUsername("admin")
                 .password("{bcrypt}$2a$12$88.f6upbBvy0okEa7OfHFuorV29qeK.sVbB9VQ6J6dWM1bW6Qef8m")
@@ -38,11 +41,14 @@ public class ProjectSecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     @Bean
     public CompromisedPasswordChecker compromisedPasswordChecker() {
+
         return new HaveIBeenPwnedRestApiPasswordChecker();
     }
+
 }
