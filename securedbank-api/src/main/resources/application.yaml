@@ -6,6 +6,11 @@ spring:
     user:
       name: ${SECURITY_USERNAME:baicham}
       password: ${SECURITY_PASSWORD:12345}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/abcbank}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
 
   logging:
     level:
