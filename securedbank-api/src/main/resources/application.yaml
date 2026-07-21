@@ -1,13 +1,17 @@
 spring:
   application:
-    name: securedbank-api
+    name: ${SPRING_APPLICATION_NAME:securedbank-api}
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:jdbc:postgresql://localhost:5434/abcbank}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-
+    url: ${DB_URL:jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5434}/${DATABASE_NAME:abcbank}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+  jpa:
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: ${HIBERNATE_FORMAT_SQL:true}
   logging:
     level:
       org:
