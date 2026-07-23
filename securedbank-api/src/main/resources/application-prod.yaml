@@ -44,3 +44,7 @@ spring:
           security: ${SPRING_SECURITY_LOG_LEVEL:ERROR}
     pattern:
       console: "${LOGPATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n}"
+server:
+  servlet:
+    session:
+      timeout: ${SESSION_TIMEOUT:10m}
