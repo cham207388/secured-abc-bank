@@ -19,14 +19,17 @@ public class SecuredBankUsernamePwdAuthenticationProvider implements Authenticat
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+
         String username = authentication.getName();
         String pwd = authentication.getCredentials().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(username,pwd,userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(username, pwd, userDetails.getAuthorities());
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
+
         return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
     }
+
 }
