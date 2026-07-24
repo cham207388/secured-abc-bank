@@ -2,7 +2,7 @@ spring:
   application:
     name: ${SPRING_APPLICATION_NAME:securedbank-api}
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:prod}
+    active: ${SPRING_PROFILES_ACTIVE:default}
   config:
     import:
       - classpath:application-prod.yaml
