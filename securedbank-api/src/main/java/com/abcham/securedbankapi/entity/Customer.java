@@ -9,7 +9,8 @@ import lombok.Setter;
 import java.sql.Date;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 public class Customer {
 
     @Id

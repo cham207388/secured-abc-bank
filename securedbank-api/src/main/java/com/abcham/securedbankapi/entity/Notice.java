@@ -11,7 +11,8 @@ import lombok.Setter;
 import java.sql.Date;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @Table(name = "notice_details")
 public class Notice {
 

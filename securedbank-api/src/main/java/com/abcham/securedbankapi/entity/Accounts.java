@@ -9,17 +9,18 @@ import lombok.Setter;
 import java.sql.Date;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 public class Accounts {
 
     @Column(name = "customer_id")
     private long customerId;
 
     @Id
-    @Column(name="account_number")
+    @Column(name = "account_number")
     private long accountNumber;
 
-    @Column(name="account_type")
+    @Column(name = "account_type")
     private String accountType;
 
     @Column(name = "branch_address")
