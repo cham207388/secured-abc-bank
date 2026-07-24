@@ -28,7 +28,7 @@ public class ProjectSecurityConfig {
                 .redirectToHttps(AbstractHttpConfigurer::disable) // Only HTTP
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
+                        .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards", "/user").authenticated()
                         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll()
                 );
         http.formLogin(withDefaults());
