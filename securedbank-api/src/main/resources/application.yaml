@@ -46,6 +46,9 @@ spring:
   threads:
     virtual:
       enabled: true
+  docker:
+    compose:
+      lifecycle-management: start_only
 server:
   servlet:
     session:
