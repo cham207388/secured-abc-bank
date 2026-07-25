@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "securedback-ui": {
+    "bank-app-ui": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/securedback-ui",
+            "outputPath": "dist/bank-app-ui",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": [
@@ -67,10 +67,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "securedback-ui:build:production"
+              "browserTarget": "bank-app-ui:build:production"
             },
             "development": {
-              "browserTarget": "securedback-ui:build:development"
+              "browserTarget": "bank-app-ui:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -78,7 +78,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "securedback-ui:build"
+            "browserTarget": "bank-app-ui:build"
           }
         },
         "test": {
@@ -101,8 +101,5 @@
         }
       }
     }
-  },
-  "cli": {
-    "analytics": false
   }
 }
