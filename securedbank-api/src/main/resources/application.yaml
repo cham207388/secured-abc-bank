@@ -46,7 +46,7 @@ spring:
     level:
       org:
         springframework:
-          security: ${SPRING_SECURITY_LOG_LEVEL:TRACE}
+          security: ${SPRING_SECURITY_LOG_LEVEL:DEBUG}
       com:
         zaxxer:
           hikari:

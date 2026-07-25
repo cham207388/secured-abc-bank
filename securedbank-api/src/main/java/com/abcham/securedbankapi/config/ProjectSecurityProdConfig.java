@@ -2,7 +2,10 @@ package com.abcham.securedbankapi.config;
 
 import com.abcham.securedbankapi.exceptionhandling.CustomAccessDeniedHandler;
 import com.abcham.securedbankapi.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.abcham.securedbankapi.filter.AuthoritiesLoggingAfterFilter;
+import com.abcham.securedbankapi.filter.AuthoritiesLoggingAtFilter;
 import com.abcham.securedbankapi.filter.CsrfCookieFilter;
+import com.abcham.securedbankapi.filter.RequestValidationBeforeFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -46,12 +49,11 @@ public class ProjectSecurityProdConfig {
                         .ignoringRequestMatchers("/contact", "/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
                 .redirectToHttps((https) -> https.requestMatchers(AnyRequestMatcher.INSTANCE)) // Only HTTPS
                 .authorizeHttpRequests((requests) -> requests
-                        /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
-                        .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
-                        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-                        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")*/
                         .requestMatchers("/myAccount").hasRole("USER")
                         .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/myLoans").hasRole("USER")
