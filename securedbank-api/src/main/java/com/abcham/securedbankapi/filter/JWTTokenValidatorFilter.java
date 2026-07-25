@@ -1,6 +1,6 @@
 package com.abcham.securedbankapi.filter;
 
-import com.abcham.securedbankapi.ApplicationConstants;
+import com.abcham.securedbankapi.constants.ApplicationConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -21,25 +21,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class JWTTokenValidatorFilter extends OncePerRequestFilter {
-    /**
-     * @param request
-     * @param response
-     * @param filterChain
-     * @throws ServletException
-     * @throws IOException
-     */
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String jwt = request.getHeader(ApplicationConstants.JWT_HEADER);
-        if(null != jwt) {
+        if (null != jwt) {
             try {
                 Environment env = getEnvironment();
                 if (null != env) {
                     String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY,
                             ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
                     SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-                    if(null !=secretKey) {
+                    if (null != secretKey) {
                         Claims claims = Jwts.parser().verifyWith(secretKey)
                                 .build().parseSignedClaims(jwt).getPayload();
                         String username = String.valueOf(claims.get("username"));
@@ -54,11 +49,12 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
                 throw new BadCredentialsException("Invalid Token received!");
             }
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+
         return request.getServletPath().equals("/user");
     }
 

@@ -1,6 +1,6 @@
 package com.abcham.securedbankapi.controller;
 
-import com.abcham.securedbankapi.ApplicationConstants;
+import com.abcham.securedbankapi.constants.ApplicationConstants;
 import com.abcham.securedbankapi.dto.LoginRequestDTO;
 import com.abcham.securedbankapi.dto.LoginResponseDTO;
 import com.abcham.securedbankapi.entity.Customer;
@@ -74,7 +74,7 @@ public class UserController {
                 String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY,
                         ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
                 SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-                jwt = Jwts.builder().issuer("Eazy Bank").subject("JWT Token")
+                jwt = Jwts.builder().issuer("Secured Bank").subject("JWT Token")
                         .claim("username", authenticationResponse.getName())
                         .claim("authorities", authenticationResponse.getAuthorities().stream().map(
                                 GrantedAuthority::getAuthority).collect(Collectors.joining(",")))

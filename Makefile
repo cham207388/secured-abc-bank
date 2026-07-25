@@ -27,7 +27,7 @@ install-api: ## Download the Gradle distribution and backend dependencies
 	cd $(API_DIR) && $(GRADLE) dependencies
 
 install-ui: ## Install exact frontend dependencies from package-lock.json
-	cd $(UI_DIR) && $(NPM) ci
+	cd $(UI_DIR) && $(NPM) install
 
 start-ui: ## Start the Angular UI
 	cd $(UI_DIR) && $(NG) serve --open
