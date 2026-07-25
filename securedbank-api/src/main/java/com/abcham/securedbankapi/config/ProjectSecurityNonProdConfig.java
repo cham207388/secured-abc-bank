@@ -43,7 +43,7 @@ public class ProjectSecurityNonProdConfig {
                     return config;
                 }))
                 .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-                        .ignoringRequestMatchers("/contact", "/register", "/apiLogin")
+                        .ignoringRequestMatchers("/contact", "/register", "/apiLogin", "/actuator/**")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)

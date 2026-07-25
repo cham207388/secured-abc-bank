@@ -64,3 +64,20 @@ server:
   servlet:
     session:
       timeout: ${SESSION_TIMEOUT:15m}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    configprops:
+      show-values: always
+    env:
+      show-values: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  # to enable /actuator/info info prefix below is required
+  info:
+    env:
+      enabled: ${MANAGEMENT_INFO_ENV_ENABLED:true}
