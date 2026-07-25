@@ -49,15 +49,12 @@ public class UserController {
             Customer savedCustomer = customerRepository.save(customer);
 
             if (savedCustomer.getId() > 0) {
-                return ResponseEntity.status(HttpStatus.CREATED).
-                        body("Given user details are successfully registered");
+                return ResponseEntity.status(HttpStatus.CREATED).body("Given user details are successfully registered");
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).
-                        body("User registration failed");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User registration failed");
             }
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
-                    body("An exception occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An exception occurred: " + ex.getMessage());
         }
     }
 
@@ -72,24 +69,24 @@ public class UserController {
     public ResponseEntity<LoginResponseDTO> apiLogin(@RequestBody LoginRequestDTO loginRequest) {
 
         String jwt = "";
-        Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(),
-                loginRequest.password());
+        Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
         Authentication authenticationResponse = authenticationManager.authenticate(authentication);
         if (null != authenticationResponse && authenticationResponse.isAuthenticated()) {
             if (null != env) {
-                String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY,
-                        ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
+                String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY, ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
                 SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-                jwt = Jwts.builder().issuer("Secured Bank").subject("JWT Token")
+                jwt = Jwts.builder().issuer("Secured Bank")
+                        .subject("JWT Token")
                         .claim("username", authenticationResponse.getName())
-                        .claim("authorities", authenticationResponse.getAuthorities().stream().map(
-                                GrantedAuthority::getAuthority).collect(Collectors.joining(",")))
+                        .claim("authorities", authenticationResponse.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .collect(Collectors.joining(",")))
                         .issuedAt(new java.util.Date())
-                        .expiration(new java.util.Date((new java.util.Date()).getTime() + 30000000))
-                        .signWith(secretKey).compact();
+                        .expiration(new java.util.Date((new java.util.Date()).getTime() + 30000000)).signWith(secretKey).compact();
             }
         }
-        return ResponseEntity.status(HttpStatus.OK).header(ApplicationConstants.JWT_HEADER, jwt)
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(ApplicationConstants.JWT_HEADER, jwt)
                 .body(new LoginResponseDTO(HttpStatus.OK.getReasonPhrase(), jwt));
     }
 

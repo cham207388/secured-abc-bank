@@ -24,15 +24,4 @@ public class CommonSecurityConfig {
 
         return new HaveIBeenPwnedRestApiPasswordChecker();
     }
-
-    @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
-
-        SecuredBankUsernamePwdAuthenticationProvider authenticationProvider =
-                new SecuredBankUsernamePwdAuthenticationProvider(userDetailsService);
-        ProviderManager providerManager = new ProviderManager(authenticationProvider);
-        providerManager.setEraseCredentialsAfterAuthentication(false);
-        return providerManager;
-    }
-
 }
