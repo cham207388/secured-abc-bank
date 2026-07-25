@@ -19,11 +19,7 @@ public class CardsController {
     public List<Cards> getCardDetails(@RequestParam long id) {
 
         List<Cards> cards = cardsRepository.findByCustomerId(id);
-        if (cards != null) {
-            return cards;
-        } else {
-            return null;
-        }
+        return cards;
     }
 
 }

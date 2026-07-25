@@ -20,11 +20,7 @@ public class BalanceController {
 
         List<AccountTransactions> accountTransactions = accountTransactionsRepository.
                 findByCustomerIdOrderByTransactionDtDesc(id);
-        if (accountTransactions != null) {
-            return accountTransactions;
-        } else {
-            return null;
-        }
+        return accountTransactions;
     }
 
 }
