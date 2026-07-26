@@ -394,28 +394,28 @@ INSERT INTO ` notice_details ` (` notice_summary `, ` notice_details `, ` notic_
                                 `,
                                 ` update_dt `)
 VALUES ('Mobile App Downtime',
-        'The mobile application of the EazyBank will be down from 2AM-5AM on 12/05/2020 due to maintenance activities',
+        'The mobile application of the SecuredBank will be down from 2AM-5AM on 12/05/2020 due to maintenance activities',
         CURDATE() - INTERVAL 30 DAY, CURDATE() + INTERVAL 30 DAY, CURDATE(), null);
 
 INSERT INTO ` notice_details ` (` notice_summary `, ` notice_details `, ` notic_beg_dt `, ` notic_end_dt `, ` create_dt
                                 `,
                                 ` update_dt `)
 VALUES ('E Auction notice',
-        'There will be a e-auction on 12/08/2020 on the Bank website for all the stubborn arrears.Interested parties can participate in the e-auction',
+        'There will be a e-auction on 12/08/2020 on the SecuredBank website for all the stubborn arrears.Interested parties can participate in the e-auction',
         CURDATE() - INTERVAL 30 DAY, CURDATE() + INTERVAL 30 DAY, CURDATE(), null);
 
 INSERT INTO ` notice_details ` (` notice_summary `, ` notice_details `, ` notic_beg_dt `, ` notic_end_dt `, ` create_dt
                                 `,
                                 ` update_dt `)
 VALUES ('Launch of Millennia Cards',
-        'Millennia Credit Cards are launched for the premium customers of EazyBank. With these cards, you will get 5% cashback for each purchase',
+        'Millennia Credit Cards are launched for the premium customers of SecuredBank. With these cards, you will get 5% cashback for each purchase',
         CURDATE() - INTERVAL 30 DAY, CURDATE() + INTERVAL 30 DAY, CURDATE(), null);
 
 INSERT INTO ` notice_details ` (` notice_summary `, ` notice_details `, ` notic_beg_dt `, ` notic_end_dt `, ` create_dt
                                 `,
                                 ` update_dt `)
 VALUES ('COVID-19 Insurance',
-        'EazyBank launched an insurance policy which will cover COVID-19 expenses. Please reach out to the branch for more details',
+        'SecuredBank launched an insurance policy which will cover COVID-19 expenses. Please reach out to the branch for more details',
         CURDATE() - INTERVAL 30 DAY, CURDATE() + INTERVAL 30 DAY, CURDATE(), null);
 
 CREATE TABLE ` contact_messages `
