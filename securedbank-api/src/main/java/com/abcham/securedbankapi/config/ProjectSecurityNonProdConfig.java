@@ -31,8 +31,7 @@ public class ProjectSecurityNonProdConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) {
 
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
-        http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .cors(corsConfig -> corsConfig.configurationSource(request -> {
+        http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).cors(corsConfig -> corsConfig.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
                     config.setAllowedMethods(Collections.singletonList("*"));
@@ -41,24 +40,8 @@ public class ProjectSecurityNonProdConfig {
                     config.setExposedHeaders(List.of("Authorization"));
                     config.setMaxAge(3600L);
                     return config;
-                }))
-                .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-                        .ignoringRequestMatchers("/contact", "/register", "/apiLogin", "/actuator/**")
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
-                .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
-                .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
-                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
-                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
-                .redirectToHttps(AbstractHttpConfigurer::disable) // Only HTTP
-                .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/myAccount").hasRole("USER")
-                        .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/myLoans").hasRole("USER")
-                        .requestMatchers("/myCards").hasRole("USER")
-                        .requestMatchers("/user").authenticated()
-                        .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin").permitAll());
+                })).csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler).ignoringRequestMatchers("/contact", "/register", "/apiLogin", "/actuator/**").csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())).addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class).addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class).addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class).addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class).addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class).addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class).redirectToHttps(AbstractHttpConfigurer::disable) // Only HTTP
+                .authorizeHttpRequests((requests) -> requests.requestMatchers("/myAccount").hasRole("USER").requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN").requestMatchers("/myLoans").hasRole("USER").requestMatchers("/myCards").hasRole("USER").requestMatchers("/user").authenticated().requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin").permitAll());
         http.formLogin(withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
@@ -68,8 +51,7 @@ public class ProjectSecurityNonProdConfig {
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
 
-        SecuredBankUsernamePwdAuthenticationProvider authenticationProvider =
-                new SecuredBankUsernamePwdAuthenticationProvider(userDetailsService);
+        SecuredBankUsernamePwdAuthenticationProvider authenticationProvider = new SecuredBankUsernamePwdAuthenticationProvider(userDetailsService);
         ProviderManager providerManager = new ProviderManager(authenticationProvider);
         providerManager.setEraseCredentialsAfterAuthentication(false);
         return providerManager;
