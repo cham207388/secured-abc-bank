@@ -44,7 +44,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:http://localhost:8180/realms/securedbank-api/protocol/openid-connect/certs}
+          jwk-set-uri: ${OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:http://localhost:8180/realms/securedbankdev/protocol/openid-connect/certs}
 
 
   logging:
