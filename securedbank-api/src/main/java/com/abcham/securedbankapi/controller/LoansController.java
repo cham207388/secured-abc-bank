@@ -1,6 +1,8 @@
 package com.abcham.securedbankapi.controller;
 
+import com.abcham.securedbankapi.entity.Customer;
 import com.abcham.securedbankapi.entity.Loans;
+import com.abcham.securedbankapi.repository.CustomerRepository;
 import com.abcham.securedbankapi.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -9,18 +11,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class LoansController {
 
     private final LoanRepository loanRepository;
+    private final CustomerRepository customerRepository;
 
     @GetMapping("/myLoans")
     @PostAuthorize("hasRole('USER')")
-    public List<Loans> getLoanDetails(@RequestParam long id) {
-
-        return loanRepository.findByCustomerIdOrderByStartDtDesc(id);
+    public List<Loans> getLoanDetails(@RequestParam String email) {
+        Optional<Customer> optionalCustomer = customerRepository.findByEmail(email);
+        return optionalCustomer.map(customer -> loanRepository.findByCustomerIdOrderByStartDtDesc(customer.getId())).orElse(null);
     }
 
 }
