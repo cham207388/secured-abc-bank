@@ -20,8 +20,7 @@ public class LoansController {
     @PostAuthorize("hasRole('USER')")
     public List<Loans> getLoanDetails(@RequestParam long id) {
 
-        List<Loans> loans = loanRepository.findByCustomerIdOrderByStartDtDesc(id);
-        return loans;
+        return loanRepository.findByCustomerIdOrderByStartDtDesc(id);
     }
 
 }

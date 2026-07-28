@@ -15,11 +15,4 @@ public class CommonSecurityConfig {
 
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
-    @Bean
-    public CompromisedPasswordChecker compromisedPasswordChecker() {
-
-        return new HaveIBeenPwnedRestApiPasswordChecker();
-    }
-
 }

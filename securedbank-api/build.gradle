@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql:11.14.1'
     // flyway ends
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
     implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"

@@ -21,11 +21,8 @@ public class NoticesController {
     public ResponseEntity<List<Notice>> getNotices() {
 
         List<Notice> notices = noticeRepository.findAllActiveNotices();
-        if (notices != null) {
-            return ResponseEntity.ok().cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS)).body(notices);
-        } else {
-            return null;
-        }
+        return notices != null ? ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS)).body(notices) : null;
     }
 
 }

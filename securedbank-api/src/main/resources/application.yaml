@@ -41,6 +41,11 @@ spring:
     user:
       name: ${SECURITY_USERNAME:eazybytes}
       password: ${SECURITY_PASSWORD:12345}
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:http://localhost:8180/realms/securedbank-api/protocol/openid-connect/certs}
+
 
   logging:
     level:
@@ -60,6 +65,7 @@ spring:
   docker:
     compose:
       lifecycle-management: start_only
+      enabled: false
 server:
   servlet:
     session:
