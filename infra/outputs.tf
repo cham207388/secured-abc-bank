@@ -13,3 +13,15 @@ output "issuer_uri" {
 output "token_endpoint" {
   value = "${trimsuffix(var.keycloak_url, "/")}/realms/${keycloak_realm.main.realm}/protocol/openid-connect/token"
 }
+
+output "authorization_endpoint" {
+  value = "${trimsuffix(var.keycloak_url, "/")}/realms/${keycloak_realm.main.realm}/protocol/openid-connect/auth"
+}
+
+output "userinfo_endpoint" {
+  value = "${trimsuffix(var.keycloak_url, "/")}/realms/${keycloak_realm.main.realm}/protocol/openid-connect/userinfo"
+}
+
+output "jwks_uri" {
+  value = "${trimsuffix(var.keycloak_url, "/")}/realms/${keycloak_realm.main.realm}/protocol/openid-connect/certs"
+}
