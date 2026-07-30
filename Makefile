@@ -23,6 +23,9 @@ export TF_VAR_realm ?= securedbankdev
 export TF_VAR_client_id ?= securedbank-api
 export TF_VAR_client_secret ?= replace-with-a-long-random-secret
 export TF_VAR_keycloak_admin_password ?= admin
+export TF_VAR_auth_code_client_id ?= securedbankclient
+export TF_VAR_auth_code_client_secret ?= replace-with-auth-code-client-secret
+export TF_VAR_user_password ?= Password@123
 
 # Optional local overrides (not committed).
 -include infra/.env

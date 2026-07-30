@@ -15,11 +15,18 @@ Keycloak runs locally via Docker Compose (`securedbank-api/compose.yml`, Keycloa
 ```mermaid
 flowchart LR
   subgraph keycloak [Keycloak realm securedbankdev]
-    Client[Client securedbank-api]
+    M2M[Client securedbank-api]
+    AuthCode[Client securedbankclient]
     SA[Service account user]
+    Happy[Happy Camper USER]
+    John[John Doe USER ADMIN]
     Roles[Realm roles USER ADMIN]
-    Client --> SA
+    M2M --> SA
     SA --> Roles
+    AuthCode --> Happy
+    AuthCode --> John
+    Happy --> Roles
+    John --> Roles
   end
 
   subgraph spring [Spring Boot API]
@@ -29,7 +36,8 @@ flowchart LR
     RS --> Conv --> AuthZ
   end
 
-  Client -->|client_credentials| Token[token_endpoint]
+  M2M -->|client_credentials| Token[token_endpoint]
+  AuthCode -->|authorization_code| Token
   Token -->|Bearer JWT| RS
   JWKS[jwks_uri] -->|public keys| RS
 ```
@@ -39,22 +47,33 @@ flowchart LR
 | Concept | Value in this project | Purpose |
 |--------|------------------------|---------|
 | **Realm** | `securedbankdev` | Isolated security domain (users, clients, roles, signing keys) |
-| **Client** | `securedbank-api` | Confidential OpenID Connect client for machine-to-machine access |
-| **Service account user** | `service-account-securedbank-api` | Virtual Keycloak user tied to the client for `client_credentials` grants |
-| **Realm roles** | `USER`, `ADMIN` | Assigned to the service account and mapped into JWT `realm_access.roles` |
+| **M2M client** | `securedbank-api` | Confidential client for machine-to-machine `client_credentials` access |
+| **Auth-code client** | `securedbankclient` | Confidential client for interactive authorization-code login (PKCE off for local testing) |
+| **Service account user** | `service-account-securedbank-api` | Virtual Keycloak user tied to the M2M client |
+| **Human users** | `happy@example.com` (USER), `johndoe@example.com` (USER + ADMIN) | Browser login test users; permanent password `Password@123` |
+| **Realm roles** | `USER`, `ADMIN` | Assigned to the service account and human users; mapped into JWT `realm_access.roles` |
 
-OpenTofu (`infra/main.tf`) configures the client as **M2M-only**:
+OpenTofu (`infra/main.tf`) configures two clients:
+
+**M2M (`securedbank-api`):**
 
 - `service_accounts_enabled = true` — enables the service account user
-- `standard_flow_enabled = false` — browser login via `authorization_endpoint` is disabled
-- `direct_access_grants_enabled = false` — resource-owner password grant is disabled
-- `full_scope_allowed = false` — roles must be explicitly mapped into tokens via `keycloak_generic_role_mapper`
+- `standard_flow_enabled = false` — browser login disabled on this client
+- `direct_access_grants_enabled = false` — resource-owner password grant disabled
+- `full_scope_allowed = false` — roles must be explicitly mapped into tokens
+
+**Authorization code (`securedbankclient`):**
+
+- `standard_flow_enabled = true` — browser login via `authorization_endpoint`
+- `service_accounts_enabled = false` — no service account
+- PKCE intentionally unset for learning/testing
+- `valid_redirect_uris = ["*"]` — permissive redirect for local experiments
 
 Role flow into Spring Security:
 
 1. OpenTofu creates realm roles (`USER`, `ADMIN`)
-2. Roles are assigned to the service account user
-3. Role mappers include them in the access token under `realm_access.roles`
+2. Roles are assigned to the M2M service account and to human users
+3. Role mappers include them in access tokens under `realm_access.roles`
 4. `KeycloakRoleConverter` maps `USER` → `ROLE_USER` for `hasRole("USER")` checks
 
 #### OpenID endpoints
@@ -70,11 +89,12 @@ OpenTofu outputs these values (`make tf-outputs`):
 | Output | Local URL | Used by |
 |--------|-----------|---------|
 | [realm](securedbankdev) | `securedbankdev` | Tenant name in every Keycloak URL |
-| [client_id](securedbank-api) | `securedbank-api` | Token requests; appears in JWT as `azp` / `client_id` |
+| [client_id](securedbank-api) | `securedbank-api` | M2M token requests; appears in JWT as `azp` / `client_id` |
+| [auth_code_client_id](securedbankclient) | `securedbankclient` | Browser authorization-code login |
 | [issuer_uri](http://localhost:8180/realms/securedbankdev) | `http://localhost:8180/realms/securedbankdev` | JWT `iss` claim; Spring can use `issuer-uri` for auto-discovery |
 | [jwks_uri](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/certs) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/certs` | **Spring Boot today** — public keys for JWT signature validation (`spring.security.oauth2.resourceserver.jwt.jwk-set-uri`) |
-| [token_endpoint](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/token) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/token` | Clients request tokens (`grant_type=client_credentials` for M2M) |
-| [authorization_endpoint](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/auth) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/auth` | Browser/OAuth login redirect (not enabled for the current M2M client) |
+| [token_endpoint](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/token) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/token` | Token exchange (`client_credentials` or `authorization_code`) |
+| [authorization_endpoint](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/auth) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/auth` | Browser login redirect for `securedbankclient` |
 | [userinfo_endpoint](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/userinfo) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/userinfo` | Returns profile claims for human user tokens (returns 403 for service-account tokens) |
 
 #### Spring Boot integration
@@ -129,23 +149,26 @@ Required environment variables for OpenTofu (copy `infra/terraform.tfvars.exampl
 - `TF_VAR_realm` — default `securedbankdev`
 - `TF_VAR_client_id` — default `securedbank-api`
 - `TF_VAR_client_secret` — default `replace-with-a-long-random-secret` (must match `infra/terraform.tfvars`)
+- `TF_VAR_auth_code_client_id` — default `securedbankclient`
+- `TF_VAR_auth_code_client_secret` — default `replace-with-auth-code-client-secret`
+- `TF_VAR_user_password` — default `Password@123`
 
-`make test-client` uses these Makefile defaults automatically. Override any value with `TF_VAR_*` or `infra/.env`.
+`make test-client` uses the M2M client defaults automatically. Override any value with `TF_VAR_*` or `infra/.env`.
 
 #### Current state and next steps
 
+- **Authorization-code client and test users are provisioned** via OpenTofu (`securedbankclient`, Happy Camper, John Doe). PKCE is intentionally off for local learning/testing.
 - **Angular is not on Keycloak yet.** The UI still uses cookie/session-based login via `LoginService`, not the `authorization_endpoint`.
-- **No human users in the realm yet.** Only the `securedbank-api` service account exists.
 - **`/user` with M2M tokens:** `authentication.getName()` resolves to the service account UUID, not an email, so customer lookup returns null.
 - **Prod config:** `application-prod.yaml` defaults JWKS to `securedbank-dev` (hyphen); the actual realm is `securedbankdev`. Override with `OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI` or align the default before deploying.
 
-To add browser login for the Angular UI:
+To wire Angular to Keycloak browser login:
 
-1. Create a frontend client with standard flow enabled and redirect URIs (e.g. `http://localhost:4200/*`)
-2. Redirect users to `authorization_endpoint` for login
-3. Exchange the authorization code at `token_endpoint`
-4. Send the access token to the Spring API as `Authorization: Bearer ...`
-5. Create human users in Keycloak and assign `USER` / `ADMIN` realm roles
+1. Redirect users to `authorization_endpoint` with `client_id=securedbankclient`
+2. Exchange the authorization code at `token_endpoint` (include the confidential client secret)
+3. Send the access token to the Spring API as `Authorization: Bearer ...`
+4. Optionally enable PKCE before any non-local deployment
+
 
 ## Database
 
