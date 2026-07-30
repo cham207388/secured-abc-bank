@@ -39,7 +39,7 @@ spring:
 
   security:
     user:
-      name: ${SECURITY_USERNAME:eazybytes}
+      name: ${SECURITY_USERNAME:baicham}
       password: ${SECURITY_PASSWORD:12345}
     oauth2:
       resourceserver:

@@ -17,12 +17,21 @@ export DATABASE_NAME ?= abcbank
 export SPRING_DATASOURCE_USERNAME ?= postgres
 export SPRING_DATASOURCE_PASSWORD ?= postgres
 
-.PHONY: help install install-api install-ui start-ui dev api ui \
+.PHONY: help install db-up db-down db-logs install-api install-ui start-ui dev api ui \
 	build build-api build-ui test test-api test-ui \
-	clean clean-api clean-ui db-up db-down db-logs
+	clean clean-api clean-ui tf-init tf-plan tf-validate tf-apply tf-destroy test-client
 
 help: ## Show the available commands
 	@awk 'BEGIN {FS = ":.*## "; printf "Usage: make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+db-up: ## Start the PostgreSQL development database
+	$(COMPOSE) -f $(API_DIR)/compose.yml up -d
+
+db-down: ## Stop the PostgreSQL development database
+	$(COMPOSE) -f $(API_DIR)/compose.yml down
+
+db-logs: ## Follow PostgreSQL logs
+	$(COMPOSE) -f $(API_DIR)/compose.yml logs -f postgres
 
 install: install-api install-ui ## Install/prepare backend and frontend dependencies
 
@@ -73,21 +82,6 @@ clean-ui: ## Remove Angular build output
 	cd $(UI_DIR) && $(NPM) run ng -- cache clean
 	find $(UI_DIR)/dist -mindepth 1 -delete 2>/dev/null || true
 
-db-up: ## Start the PostgreSQL development database
-	$(COMPOSE) -f $(API_DIR)/compose.yml up -d postgres
-	@attempt=0; \
-		until $(COMPOSE) -f $(API_DIR)/compose.yml exec -T postgres pg_isready -U $(SPRING_DATASOURCE_USERNAME) -d $(DATABASE_NAME) >/dev/null 2>&1; do \
-			attempt=$$((attempt + 1)); \
-			if [ $$attempt -ge 30 ]; then echo "PostgreSQL did not become ready"; exit 1; fi; \
-			sleep 1; \
-		done
-
-db-down: ## Stop the PostgreSQL development database
-	$(COMPOSE) -f $(API_DIR)/compose.yml down
-
-db-logs: ## Follow PostgreSQL logs
-	$(COMPOSE) -f $(API_DIR)/compose.yml logs -f postgres
-
 tf-init:
 	$(TOFU) -chdir=$(TF_DIR) init $(TF_ARGS) -upgrade
 
@@ -97,8 +91,13 @@ tf-plan:
 tf-validate:
 	$(TOFU) -chdir=$(TF_DIR) validate $(TF_ARGS)
 
+tf-fmt:
+	$(TOFU) -chdir=$(TF_DIR) fmt $(TF_ARGS)
+
 tf-apply:
 	$(TOFU) -chdir=$(TF_DIR) apply $(TF_ARGS) --auto-approve
+
+tf-start: tf-init tf-plan tf-validate tf-fmt tf-apply
 
 tf-destroy:
 	$(TOFU) -chdir=$(TF_DIR) destroy $(TF_ARGS) --auto-approve
