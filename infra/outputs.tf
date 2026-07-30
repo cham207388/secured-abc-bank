@@ -3,7 +3,7 @@ output "realm" {
 }
 
 output "client_id" {
-  value = keycloak_openid_client.main.client_id
+  value = keycloak_openid_client.client_type.client_id
 }
 
 output "issuer_uri" {

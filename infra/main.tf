@@ -15,7 +15,7 @@ resource "keycloak_realm" "main" {
   terraform_deletion_protection = false
 }
 
-resource "keycloak_openid_client" "main" {
+resource "keycloak_openid_client" "client_type" {
   realm_id  = keycloak_realm.main.id
   client_id = var.client_id
 
@@ -62,7 +62,7 @@ resource "keycloak_openid_client_service_account_realm_role" "service_account" {
   for_each = keycloak_role.service_account
 
   realm_id                = keycloak_realm.main.id
-  service_account_user_id = keycloak_openid_client.main.service_account_user_id
+  service_account_user_id = keycloak_openid_client.client_type.service_account_user_id
   role                    = each.value.name
 }
 
@@ -71,6 +71,6 @@ resource "keycloak_generic_role_mapper" "service_account" {
   for_each = keycloak_role.service_account
 
   realm_id  = keycloak_realm.main.id
-  client_id = keycloak_openid_client.main.id
+  client_id = keycloak_openid_client.client_type.id
   role_id   = each.value.id
 }
