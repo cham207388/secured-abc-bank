@@ -1,0 +1,5 @@
+keycloak_url            = "http://localhost:8180"
+realm                   = "securedbankdev"
+client_id               = "securedbank-api"
+client_secret           = "replace-with-a-long-random-secret"
+keycloak_admin_password = "admin"

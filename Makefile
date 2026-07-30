@@ -17,6 +17,16 @@ export DATABASE_NAME ?= abcbank
 export SPRING_DATASOURCE_USERNAME ?= postgres
 export SPRING_DATASOURCE_PASSWORD ?= postgres
 
+# Keycloak / OpenTofu local defaults (override via TF_VAR_* or infra/terraform.tfvars).
+export TF_VAR_keycloak_url ?= http://localhost:8180
+export TF_VAR_realm ?= securedbankdev
+export TF_VAR_client_id ?= securedbank-api
+export TF_VAR_client_secret ?= replace-with-a-long-random-secret
+export TF_VAR_keycloak_admin_password ?= admin
+
+# Optional local overrides (not committed).
+-include infra/.env
+
 .PHONY: help install db-up db-down db-logs install-api install-ui start-ui dev api ui \
 	build build-api build-ui test test-api test-ui \
 	clean clean-api clean-ui tf-init tf-plan tf-validate tf-apply tf-destroy test-client
@@ -97,18 +107,16 @@ tf-fmt:
 tf-apply:
 	$(TOFU) -chdir=$(TF_DIR) apply $(TF_ARGS) --auto-approve
 
+tf-outputs:
+	$(TOFU) -chdir=$(TF_DIR) output $(TF_ARGS)
+
 tf-start: tf-init tf-plan tf-validate tf-fmt tf-apply
 
 tf-destroy:
 	$(TOFU) -chdir=$(TF_DIR) destroy $(TF_ARGS) --auto-approve
 
-test-client:
-	@set -eu; \
-	: "$${TF_VAR_keycloak_url:?Set TF_VAR_keycloak_url}"; \
-	: "$${TF_VAR_realm:?Set TF_VAR_realm}"; \
-	: "$${TF_VAR_client_id:?Set TF_VAR_client_id}"; \
-	: "$${TF_VAR_client_secret:?Set TF_VAR_client_secret}"; \
-	curl --fail-with-body --silent --show-error \
+test-client: ## Request a Keycloak client_credentials token
+	@curl --fail-with-body --silent --show-error \
 		--request POST \
 		--url "$${TF_VAR_keycloak_url%/}/realms/$${TF_VAR_realm}/protocol/openid-connect/token" \
 		--header 'Content-Type: application/x-www-form-urlencoded' \
