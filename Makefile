@@ -6,6 +6,9 @@ GRADLE := ./gradlew
 NPM := npm
 NG := ng
 COMPOSE := docker compose
+TOFU ?= tofu
+TF_DIR ?= infra
+TF_ARGS ?=
 
 # Keep these aligned with securedbank-api/compose.yml.
 export DATABASE_HOST ?= localhost
@@ -84,3 +87,33 @@ db-down: ## Stop the PostgreSQL development database
 
 db-logs: ## Follow PostgreSQL logs
 	$(COMPOSE) -f $(API_DIR)/compose.yml logs -f postgres
+
+tf-init:
+	$(TOFU) -chdir=$(TF_DIR) init $(TF_ARGS) -upgrade
+
+tf-plan:
+	$(TOFU) -chdir=$(TF_DIR) plan $(TF_ARGS)
+
+tf-validate:
+	$(TOFU) -chdir=$(TF_DIR) validate $(TF_ARGS)
+
+tf-apply:
+	$(TOFU) -chdir=$(TF_DIR) apply $(TF_ARGS) --auto-approve
+
+tf-destroy:
+	$(TOFU) -chdir=$(TF_DIR) destroy $(TF_ARGS) --auto-approve
+
+test-client:
+	@set -eu; \
+	: "$${TF_VAR_keycloak_url:?Set TF_VAR_keycloak_url}"; \
+	: "$${TF_VAR_realm:?Set TF_VAR_realm}"; \
+	: "$${TF_VAR_client_id:?Set TF_VAR_client_id}"; \
+	: "$${TF_VAR_client_secret:?Set TF_VAR_client_secret}"; \
+	curl --fail-with-body --silent --show-error \
+		--request POST \
+		--url "$${TF_VAR_keycloak_url%/}/realms/$${TF_VAR_realm}/protocol/openid-connect/token" \
+		--header 'Content-Type: application/x-www-form-urlencoded' \
+		--data 'grant_type=client_credentials' \
+		--data-urlencode "client_id=$${TF_VAR_client_id}" \
+		--data-urlencode "client_secret=$${TF_VAR_client_secret}"; \
+	printf '\n'
