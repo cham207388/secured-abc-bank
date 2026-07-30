@@ -3,6 +3,7 @@ package com.abcham.securedbankapi.config;
 import com.abcham.securedbankapi.exceptionhandling.CustomAccessDeniedHandler;
 import com.abcham.securedbankapi.filter.CsrfCookieFilter;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -23,6 +24,15 @@ import java.util.Collections;
 @Configuration
 @Profile("prod")
 public class ProjectSecurityProdConfig {
+
+    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-uri}")
+    String introspectionUri;
+
+    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-id}")
+    String clientId;
+
+    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-secret}")
+    String clientSecret;
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -55,21 +65,26 @@ public class ProjectSecurityProdConfig {
                 .redirectToHttps((https) -> https.requestMatchers(AnyRequestMatcher.INSTANCE)) //
                 // Only HTTPS
                 .authorizeHttpRequests((requests) -> requests.requestMatchers("/myAccount")
-                                                             .hasRole("USER")
-                                                             .requestMatchers("/myBalance")
-                                                             .hasAnyRole("USER", "ADMIN")
-                                                             .requestMatchers("/myLoans")
-                                                             .authenticated()
-                                                             .requestMatchers("/myCards")
-                                                             .hasRole("USER")
-                                                             .requestMatchers("/user")
-                                                             .authenticated()
-                                                             .requestMatchers("/notices",
-                                                                     "/contact", "/error",
-                                                                     "/register")
-                                                             .permitAll())
-        ;
-        http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+                        .hasRole("USER")
+                        .requestMatchers("/myBalance")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/myLoans")
+                        .authenticated()
+                        .requestMatchers("/myCards")
+                        .hasRole("USER")
+                        .requestMatchers("/user")
+                        .authenticated()
+                        .requestMatchers("/notices",
+                                "/contact", "/error",
+                                "/register")
+                        .permitAll());
+//        http.oauth2ResourceServer(rsc -> rsc
+//                .jwt(jwtConfigurer -> jwtConfigurer
+//                        .jwtAuthenticationConverter(jwtAuthenticationConverter)));
+        http.oauth2ResourceServer(rsc -> rsc
+                .opaqueToken(otc -> otc.authenticationConverter(new KeycloakOpaqueRoleConverter())
+                        .introspectionUri(introspectionUri)
+                        .introspectionClientCredentials(clientId, clientSecret)));
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
