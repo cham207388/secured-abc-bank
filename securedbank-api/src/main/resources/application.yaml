@@ -43,8 +43,8 @@ spring:
       password: ${SECURITY_PASSWORD:12345}
     oauth2:
       resourceserver:
-        jwt:
-          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8180/realms/securedbankdev/protocol/openid-connect/certs}
+        # jwt:
+        #   jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8180/realms/securedbankdev/protocol/openid-connect/certs}
         opaque:
           introspection-uri: ${OPAQUE_INTROSPECTION_URI:http://localhost:8180/realms/securedbankdev/protocol/openid-connect/token/introspect}
           introspection-client-id: ${OPAQUE_INTROSPECTION_CLIENT_ID:securedbank-introspect}
