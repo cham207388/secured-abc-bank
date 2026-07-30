@@ -78,9 +78,6 @@ public class ProjectSecurityProdConfig {
                                 "/contact", "/error",
                                 "/register")
                         .permitAll());
-//        http.oauth2ResourceServer(rsc -> rsc
-//                .jwt(jwtConfigurer -> jwtConfigurer
-//                        .jwtAuthenticationConverter(jwtAuthenticationConverter)));
         http.oauth2ResourceServer(rsc -> rsc
                 .opaqueToken(otc -> otc.authenticationConverter(new KeycloakOpaqueRoleConverter())
                         .introspectionUri(introspectionUri)
