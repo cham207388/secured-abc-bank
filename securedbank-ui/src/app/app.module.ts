@@ -22,7 +22,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
       config: {
         url: 'http://localhost:8180/',
         realm: 'securedbankdev',
-        clientId: 'securedbankpublicclientui',
+        clientId: 'securedbankclientpublicui',
       },
       initOptions: {
         pkceMethod: 'S256',

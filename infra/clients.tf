@@ -78,6 +78,33 @@ resource "keycloak_openid_client" "pkce_type" {
   full_scope_allowed = false
 }
 
+resource "keycloak_openid_client" "pkce_ui_type" {
+  realm_id  = keycloak_realm.main.id
+  client_id = var.pkce_ui_client_id
+
+  name        = var.pkce_ui_client_id
+  description = "Public authorization-code OAuth client with PKCE for the Angular UI (${var.pkce_ui_client_id})"
+  enabled     = true
+
+  # Public client: Client authentication off (no client secret).
+  access_type = "PUBLIC"
+
+  # Authorization Code grant for interactive Angular SPA login.
+  standard_flow_enabled        = true
+  implicit_flow_enabled        = false
+  direct_access_grants_enabled = false
+  service_accounts_enabled     = false
+
+  pkce_code_challenge_method = "S256"
+
+  valid_redirect_uris             = ["http://localhost:4200/dashboard"]
+  valid_post_logout_redirect_uris = ["http://localhost:4200/home"]
+  web_origins                     = ["*"]
+
+  # Only explicitly mapped roles are included in access tokens.
+  full_scope_allowed = false
+}
+
 # Assign USER and ADMIN to the securedbank-api service-account user.
 resource "keycloak_openid_client_service_account_realm_role" "service_account" {
   for_each = keycloak_role.service_account
@@ -111,5 +138,14 @@ resource "keycloak_generic_role_mapper" "pkce" {
 
   realm_id  = keycloak_realm.main.id
   client_id = keycloak_openid_client.pkce_type.id
+  role_id   = each.value.id
+}
+
+# Permit realm roles to appear in tokens issued by the Angular UI PKCE client.
+resource "keycloak_generic_role_mapper" "pkce_ui" {
+  for_each = keycloak_role.service_account
+
+  realm_id  = keycloak_realm.main.id
+  client_id = keycloak_openid_client.pkce_ui_type.id
   role_id   = each.value.id
 }

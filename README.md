@@ -18,6 +18,7 @@ flowchart LR
     M2M[Client securedbank-api]
     AuthCode[Client securedbankclient]
     Pkce[Client securebankclientpublic]
+    PkceUi[Client securedbankclientpublicui]
     SA[Service account user]
     Happy[Happy Camper USER]
     John[John Doe USER ADMIN]
@@ -28,6 +29,8 @@ flowchart LR
     AuthCode --> John
     Pkce --> Happy
     Pkce --> John
+    PkceUi --> Happy
+    PkceUi --> John
     Happy --> Roles
     John --> Roles
   end
@@ -42,6 +45,7 @@ flowchart LR
   M2M -->|client_credentials| Token[token_endpoint]
   AuthCode -->|authorization_code| Token
   Pkce -->|authorization_code_plus_PKCE| Token
+  PkceUi -->|authorization_code_plus_PKCE| Token
   Token -->|Bearer JWT| RS
   JWKS[jwks_uri] -->|public keys| RS
 ```
@@ -54,11 +58,12 @@ flowchart LR
 | **M2M client** | `securedbank-api` | Confidential client for machine-to-machine `client_credentials` access |
 | **Auth-code client** | `securedbankclient` | Confidential client for interactive authorization-code login (PKCE off for local testing) |
 | **PKCE public client** | `securebankclientpublic` | Public client for SPA-style authorization-code login with PKCE S256 (no client secret) |
+| **PKCE UI client** | `securedbankclientpublicui` | Public PKCE S256 client for Angular; redirect `http://localhost:4200/dashboard`, post-logout `http://localhost:4200/home` |
 | **Service account user** | `service-account-securedbank-api` | Virtual Keycloak user tied to the M2M client |
 | **Human users** | `happy@example.com` (USER), `johndoe@example.com` (USER + ADMIN) | Browser login test users; permanent password `Password@123` |
 | **Realm roles** | `USER`, `ADMIN` | Assigned to the service account and human users; mapped into JWT `realm_access.roles` |
 
-OpenTofu (`infra/clients.tf`) configures three clients:
+OpenTofu (`infra/clients.tf`) configures four clients:
 
 **M2M (`securedbank-api`):**
 
@@ -80,6 +85,13 @@ OpenTofu (`infra/clients.tf`) configures three clients:
 - `standard_flow_enabled = true` — authorization code grant
 - `pkce_code_challenge_method = S256`
 - `valid_redirect_uris = ["*"]` — permissive redirect for local experiments
+
+**PKCE UI (`securedbankclientpublicui`):**
+
+- Same public + PKCE S256 shape as `securebankclientpublic`
+- `valid_redirect_uris = ["http://localhost:4200/dashboard"]`
+- `valid_post_logout_redirect_uris = ["http://localhost:4200/home"]`
+- `web_origins = ["*"]`
 
 Role flow into Spring Security:
 
@@ -104,6 +116,7 @@ OpenTofu outputs these values (`make tf-outputs`):
 | [client_id](securedbank-api) | `securedbank-api` | M2M token requests; appears in JWT as `azp` / `client_id` |
 | [auth_code_client_id](securedbankclient) | `securedbankclient` | Confidential browser authorization-code login (no PKCE) |
 | [pkce_client_id](securebankclientpublic) | `securebankclientpublic` | Public browser authorization-code login with PKCE S256 |
+| [pkce_ui_client_id](securedbankclientpublicui) | `securedbankclientpublicui` | Angular UI PKCE login (redirect `/dashboard`, logout `/home`) |
 | [issuer_uri](http://localhost:8180/realms/securedbankdev) | `http://localhost:8180/realms/securedbankdev` | JWT `iss` claim; Spring can use `issuer-uri` for auto-discovery |
 | [jwks_uri](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/certs) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/certs` | **Spring Boot today** — public keys for JWT signature validation (`spring.security.oauth2.resourceserver.jwt.jwk-set-uri`) |
 | [token_endpoint](http://localhost:8180/realms/securedbankdev/protocol/openid-connect/token) | `http://localhost:8180/realms/securedbankdev/protocol/openid-connect/token` | Token exchange (`client_credentials` or `authorization_code`) |
@@ -165,13 +178,14 @@ Required environment variables for OpenTofu (copy `infra/terraform.tfvars.exampl
 - `TF_VAR_auth_code_client_id` — default `securedbankclient`
 - `TF_VAR_auth_code_client_secret` — default `replace-with-auth-code-client-secret`
 - `TF_VAR_pkce_client_id` — default `securebankclientpublic`
+- `TF_VAR_pkce_ui_client_id` — default `securedbankclientpublicui`
 - `TF_VAR_user_password` — default `Password@123`
 
 `make test-client` uses the M2M client defaults automatically. Override any value with `TF_VAR_*` or `infra/.env`.
 
 #### Current state and next steps
 
-- **Three clients are provisioned:** M2M (`securedbank-api`), confidential auth-code without PKCE (`securedbankclient`), and public PKCE S256 (`securebankclientpublic`).
+- **Four clients are provisioned:** M2M (`securedbank-api`), confidential auth-code without PKCE (`securedbankclient`), public PKCE S256 (`securebankclientpublic`), and Angular UI PKCE (`securedbankclientpublicui`).
 - **Test users** Happy Camper and John Doe exist for browser login flows.
 - **Angular is not on Keycloak yet.** The UI still uses cookie/session-based login via `LoginService`, not the `authorization_endpoint`.
 - **`/user` with M2M tokens:** `authentication.getName()` resolves to the service account UUID, not an email, so customer lookup returns null.
@@ -179,9 +193,10 @@ Required environment variables for OpenTofu (copy `infra/terraform.tfvars.exampl
 
 To wire Angular to Keycloak browser login with PKCE:
 
-1. Redirect users to `authorization_endpoint` with `client_id=securebankclientpublic`, `code_challenge`, and `code_challenge_method=S256`
+1. Redirect users to `authorization_endpoint` with `client_id=securedbankclientpublicui`, `code_challenge`, `code_challenge_method=S256`, and `redirect_uri=http://localhost:4200/dashboard`
 2. Exchange the authorization code at `token_endpoint` with `code_verifier` (no client secret)
 3. Send the access token to the Spring API as `Authorization: Bearer ...`
+4. On logout, redirect to Keycloak end-session and then `http://localhost:4200/home`
 
 
 ## Database

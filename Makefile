@@ -26,6 +26,7 @@ export TF_VAR_keycloak_admin_password ?= admin
 export TF_VAR_auth_code_client_id ?= securedbankclient
 export TF_VAR_auth_code_client_secret ?= replace-with-auth-code-client-secret
 export TF_VAR_pkce_client_id ?= securebankclientpublic
+export TF_VAR_pkce_ui_client_id ?= securedbankclientpublicui
 export TF_VAR_user_password ?= Password@123
 
 # Optional local overrides (not committed).
@@ -42,7 +43,7 @@ db-up: ## Start the PostgreSQL development database
 	$(COMPOSE) -f $(API_DIR)/compose.yml up -d
 
 db-down: ## Stop the PostgreSQL development database
-	$(COMPOSE) -f $(API_DIR)/compose.yml down
+	$(COMPOSE) -f $(API_DIR)/compose.yml down -v
 
 db-logs: ## Follow PostgreSQL logs
 	$(COMPOSE) -f $(API_DIR)/compose.yml logs -f postgres
@@ -57,13 +58,6 @@ install-ui: ## Install exact frontend dependencies from package-lock.json
 
 start-ui: ## Start the Angular UI
 	cd $(UI_DIR) && $(NG) serve --open
-
-dev: ## Start PostgreSQL, Spring Boot, and Angular together
-	@$(MAKE) db-up
-	@$(MAKE) api & api_pid=$$!; \
-		$(MAKE) ui & ui_pid=$$!; \
-		trap 'kill $$api_pid $$ui_pid 2>/dev/null || true' INT TERM EXIT; \
-		wait
 
 api: ## Run the Spring Boot API at http://localhost:8080
 	cd $(API_DIR) && $(GRADLE) bootRun

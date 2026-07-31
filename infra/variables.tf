@@ -58,7 +58,13 @@ variable "auth_code_client_secret_version" {
 variable "pkce_client_id" {
   description = "Client ID for the public authorization-code OAuth client with PKCE S256"
   type        = string
-  default     = "securebankclientpublic"
+  default     = "securedbankpublicclient"
+}
+
+variable "pkce_ui_client_id" {
+  description = "Client ID for the Angular UI public authorization-code OAuth client with PKCE S256"
+  type        = string
+  default     = "securedbankpublicclientui"
 }
 
 variable "user_password" {
