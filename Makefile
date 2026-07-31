@@ -32,20 +32,20 @@ export TF_VAR_user_password ?= Password@123
 # Optional local overrides (not committed).
 -include infra/.env
 
-.PHONY: help install db-up db-down db-logs install-api install-ui start-ui dev api ui \
+.PHONY: help install compose-up compose-down compose-logs install-api install-ui start-ui dev api ui \
 	build build-api build-ui test test-api test-ui \
 	clean clean-api clean-ui tf-init tf-plan tf-validate tf-apply tf-destroy test-client
 
 help: ## Show the available commands
 	@awk 'BEGIN {FS = ":.*## "; printf "Usage: make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-db-up: ## Start the PostgreSQL development database
+compose-up: ## Start the Docker Compose services
 	$(COMPOSE) -f $(API_DIR)/compose.yml up -d
 
-db-down: ## Stop the PostgreSQL development database
+compose-down: ## Stop the Docker Compose services
 	$(COMPOSE) -f $(API_DIR)/compose.yml down -v
 
-db-logs: ## Follow PostgreSQL logs
+compose-logs: ## Follow Docker Compose logs
 	$(COMPOSE) -f $(API_DIR)/compose.yml logs -f postgres
 
 install: install-api install-ui ## Install/prepare backend and frontend dependencies
@@ -67,7 +67,7 @@ ui: ## Run the Angular UI at http://localhost:4200
 
 build: build-api build-ui ## Build backend and frontend production artifacts
 
-build-api: db-up ## Build the Spring Boot application
+build-api: compose-up ## Build the Spring Boot application
 	cd $(API_DIR) && $(GRADLE) build
 
 build-ui: ## Build the Angular production bundle
@@ -75,7 +75,7 @@ build-ui: ## Build the Angular production bundle
 
 test: test-api test-ui ## Run backend and frontend unit tests
 
-test-api: db-up ## Run Spring Boot tests
+test-api: compose-up ## Run Spring Boot tests
 	cd $(API_DIR) && $(GRADLE) test
 
 test-ui: ## Run Angular tests once in headless Chrome

@@ -36,6 +36,7 @@ resource "keycloak_user_roles" "happy_camper" {
 
   role_ids = [
     keycloak_role.service_account["USER"].id,
+    data.keycloak_role.account_view_profile.id,
   ]
 }
 
@@ -46,5 +47,6 @@ resource "keycloak_user_roles" "john_doe" {
   role_ids = [
     keycloak_role.service_account["USER"].id,
     keycloak_role.service_account["ADMIN"].id,
+    data.keycloak_role.account_view_profile.id,
   ]
 }

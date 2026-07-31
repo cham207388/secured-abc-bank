@@ -1,3 +1,14 @@
+data "keycloak_openid_client" "account" {
+  realm_id  = keycloak_realm.main.id
+  client_id = "account"
+}
+
+data "keycloak_role" "account_view_profile" {
+  realm_id  = keycloak_realm.main.id
+  client_id = data.keycloak_openid_client.account.id
+  name      = "view-profile"
+}
+
 resource "keycloak_openid_client" "client_type" {
   realm_id  = keycloak_realm.main.id
   client_id = var.client_type_client_id
@@ -99,7 +110,7 @@ resource "keycloak_openid_client" "pkce_ui_type" {
 
   valid_redirect_uris             = ["http://localhost:4200/dashboard"]
   valid_post_logout_redirect_uris = ["http://localhost:4200/home"]
-  web_origins                     = ["*"]
+  web_origins                     = ["http://localhost:4200"]
 
   # Only explicitly mapped roles are included in access tokens.
   full_scope_allowed = false
@@ -148,4 +159,11 @@ resource "keycloak_generic_role_mapper" "pkce_ui" {
   realm_id  = keycloak_realm.main.id
   client_id = keycloak_openid_client.pkce_ui_type.id
   role_id   = each.value.id
+}
+
+# Allow the Angular UI token to read the signed-in user's Keycloak profile.
+resource "keycloak_generic_role_mapper" "pkce_ui_account_view_profile" {
+  realm_id  = keycloak_realm.main.id
+  client_id = keycloak_openid_client.pkce_ui_type.id
+  role_id   = data.keycloak_role.account_view_profile.id
 }

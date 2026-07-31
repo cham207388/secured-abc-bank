@@ -91,7 +91,8 @@ OpenTofu (`infra/clients.tf`) configures four clients:
 - Same public + PKCE S256 shape as `securebankclientpublic`
 - `valid_redirect_uris = ["http://localhost:4200/dashboard"]`
 - `valid_post_logout_redirect_uris = ["http://localhost:4200/home"]`
-- `web_origins = ["*"]`
+- `web_origins = ["http://localhost:4200"]`
+- Maps the built-in `account:view-profile` role so `keycloak-js` can load the signed-in user's profile
 
 Role flow into Spring Security:
 
@@ -99,6 +100,10 @@ Role flow into Spring Security:
 2. Roles are assigned to the M2M service account and to human users
 3. Role mappers include them in access tokens under `realm_access.roles`
 4. `KeycloakRoleConverter` maps `USER` → `ROLE_USER` for `hasRole("USER")` checks
+
+The two browser-login users also receive the built-in `account:view-profile`
+client role. The UI client's scope mapping includes that role, which adds the
+`account` audience required by `KeycloakService.loadUserProfile()`.
 
 #### OpenID endpoints
 
