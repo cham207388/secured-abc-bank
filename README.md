@@ -105,6 +105,24 @@ The two browser-login users also receive the built-in `account:view-profile`
 client role. The UI client's scope mapping includes that role, which adds the
 `account` audience required by `KeycloakService.loadUserProfile()`.
 
+#### OTP policy and enrollment
+
+The realm requires browser-login users to enroll a six-digit TOTP authenticator:
+
+- HMAC-SHA1 with a 15-second period and a look-ahead window of one interval
+- OTP codes cannot be reused
+- `CONFIGURE_TOTP` is enabled as a default required action for future users
+- Terraform-managed users receive the action when they are created; lifecycle
+  configuration prevents OpenTofu from restoring it after enrollment
+
+The authenticator application must honor the non-default `period=15` value in
+the provisioning URI. On first login, scan the Keycloak QR code and enter the
+current code to finish enrollment. Subsequent logins require both the password
+and a current OTP code.
+
+If a user loses the authenticator, an administrator must delete that user's OTP
+credential in Keycloak and assign the `CONFIGURE_TOTP` required action again.
+
 #### OpenID endpoints
 
 All URLs are published from OpenID discovery:

@@ -3,15 +3,23 @@ resource "keycloak_user" "happy_camper" {
   username = "happy@example.com"
   enabled  = true
 
-  email          = "happy@example.com"
-  email_verified = true
-  first_name     = "Happy"
-  last_name      = "Camper"
+  email            = "happy@example.com"
+  email_verified   = true
+  first_name       = "Happy"
+  last_name        = "Camper"
+  required_actions = ["CONFIGURE_TOTP"]
 
   initial_password {
     value     = var.user_password
     temporary = false
   }
+
+  # Keycloak removes CONFIGURE_TOTP after enrollment; do not add it back.
+  lifecycle {
+    ignore_changes = [required_actions]
+  }
+
+  depends_on = [keycloak_required_action.configure_totp]
 }
 
 resource "keycloak_user" "john_doe" {
@@ -19,15 +27,23 @@ resource "keycloak_user" "john_doe" {
   username = "johndoe@example.com"
   enabled  = true
 
-  email          = "johndoe@example.com"
-  email_verified = true
-  first_name     = "John"
-  last_name      = "Doe"
+  email            = "johndoe@example.com"
+  email_verified   = true
+  first_name       = "John"
+  last_name        = "Doe"
+  required_actions = ["CONFIGURE_TOTP"]
 
   initial_password {
     value     = var.user_password
     temporary = false
   }
+
+  # Keycloak removes CONFIGURE_TOTP after enrollment; do not add it back.
+  lifecycle {
+    ignore_changes = [required_actions]
+  }
+
+  depends_on = [keycloak_required_action.configure_totp]
 }
 
 resource "keycloak_user_roles" "happy_camper" {

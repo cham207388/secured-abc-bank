@@ -11,8 +11,27 @@ resource "keycloak_realm" "main" {
   duplicate_emails_allowed = false
   reset_password_allowed   = true
 
+  otp_policy {
+    type              = "totp"
+    algorithm         = "HmacSHA1"
+    digits            = 6
+    initial_counter   = 0
+    look_ahead_window = 1
+    period            = 15
+    code_reusable     = false
+  }
+
   # Prevent accidental realm deletion by terraform destroy.
   terraform_deletion_protection = false
+}
+
+# Require newly provisioned users to enroll a TOTP authenticator.
+resource "keycloak_required_action" "configure_totp" {
+  realm_id       = keycloak_realm.main.id
+  alias          = "CONFIGURE_TOTP"
+  name           = "Configure OTP"
+  enabled        = true
+  default_action = true
 }
 
 locals {
