@@ -55,6 +55,12 @@ variable "auth_code_client_secret_version" {
   default     = 1
 }
 
+variable "pkce_client_id" {
+  description = "Client ID for the public authorization-code OAuth client with PKCE S256"
+  type        = string
+  default     = "securebankclientpublic"
+}
+
 variable "user_password" {
   description = "Permanent initial password for Terraform-managed realm users"
   type        = string

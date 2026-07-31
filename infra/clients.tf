@@ -52,6 +52,32 @@ resource "keycloak_openid_client" "auth_code_type" {
   client_secret_wo_version = var.auth_code_client_secret_version
 }
 
+resource "keycloak_openid_client" "pkce_type" {
+  realm_id  = keycloak_realm.main.id
+  client_id = var.pkce_client_id
+
+  name        = var.pkce_client_id
+  description = "Public authorization-code OAuth client with PKCE for ${var.pkce_client_id}"
+  enabled     = true
+
+  # Public client: Client authentication off (no client secret).
+  access_type = "PUBLIC"
+
+  # Authorization Code grant for interactive browser / SPA login.
+  standard_flow_enabled        = true
+  implicit_flow_enabled        = false
+  direct_access_grants_enabled = false
+  service_accounts_enabled     = false
+
+  pkce_code_challenge_method = "S256"
+
+  valid_redirect_uris = ["*"]
+  web_origins         = ["*"]
+
+  # Only explicitly mapped roles are included in access tokens.
+  full_scope_allowed = false
+}
+
 # Assign USER and ADMIN to the securedbank-api service-account user.
 resource "keycloak_openid_client_service_account_realm_role" "service_account" {
   for_each = keycloak_role.service_account
@@ -76,5 +102,14 @@ resource "keycloak_generic_role_mapper" "auth_code" {
 
   realm_id  = keycloak_realm.main.id
   client_id = keycloak_openid_client.auth_code_type.id
+  role_id   = each.value.id
+}
+
+# Permit realm roles to appear in tokens issued by the PKCE public client.
+resource "keycloak_generic_role_mapper" "pkce" {
+  for_each = keycloak_role.service_account
+
+  realm_id  = keycloak_realm.main.id
+  client_id = keycloak_openid_client.pkce_type.id
   role_id   = each.value.id
 }
